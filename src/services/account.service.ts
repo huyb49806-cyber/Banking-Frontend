@@ -1,13 +1,17 @@
 import api from "./api";
+import type { Account } from "../types/account";
 import type { CreateAccountRequest } from "../types/createAccount";
 
-const ACCOUNT_URL = "/account";
-
 const accountService = {
-  getAccounts: () => api.get(`${ACCOUNT_URL}/my-accounts`),
+  async getAccounts(): Promise<Account[]> {
+    const response = await api.get<Account[]>("/accounts/me");
+    return response.data;
+  },
 
-  createAccount: (data: CreateAccountRequest) =>
-    api.post(`${ACCOUNT_URL}/create`, data),
+  async createAccount(data: CreateAccountRequest): Promise<Account> {
+    const response = await api.post<Account>("/accounts", data);
+    return response.data;
+  },
 };
 
 export default accountService;

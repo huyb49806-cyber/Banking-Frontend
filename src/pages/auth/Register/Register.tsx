@@ -1,225 +1,128 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import type { FormEvent } from "react";
 import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  Stack,
-  Snackbar,
   Alert,
-  IconButton,
-  InputAdornment,
+  Box,
+  Button,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
 } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  Visibility,
-  VisibilityOff,
-} from "@mui/icons-material";
-
 import { register } from "../../../services/auth.service";
+import type { RegisterRequest } from "../../../types/auth";
+
 export default function Register() {
-
   const navigate = useNavigate();
-
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+  const [form, setForm] = useState<RegisterRequest>({
+    username: "",
+    email: "",
+    password: "",
+  });
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  const [showPassword, setShowPassword] = useState(false);
-
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-  const handleRegister = async () => {
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
 
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !phone ||
-      !password ||
-      !confirmPassword
-    ) {
-      setError("Please fill all fields");
+    if (form.password !== confirmPassword) {
+      setError("Mật khẩu xác nhận không khớp.");
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    if (form.password.length < 8 || form.password.length > 72) {
+      setError("Mật khẩu phải dài từ 8 đến 72 ký tự.");
       return;
     }
+
+    setLoading(true);
 
     try {
-
-      setLoading(true);
-
-      await register({
-        firstName,
-        lastName,
-        email,
-        phone,
-        password,
-      });
-
-      setSuccess(true);
-
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
-
- } catch (err: unknown) {
-
-  if (axios.isAxiosError(err)) {
-    setError(
-      err.response?.data?.message || "Registration Failed"
-    );
-  } else {
-    setError("Registration Failed");
+      await register(form);
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.message ?? "Đăng ký thất bại."
+          : "Không thể kết nối máy chủ."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
-} finally {
-
-  setLoading(false);
-
-}
-
-  };
-    return (
-    <>
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          bgcolor: "#f4f6f8",
-          p: 2,
-        }}
-      >
-        <Paper
-          elevation={5}
-          sx={{
-            width: 450,
-            p: 4,
-            borderRadius: 3,
-          }}
-        >
-          <Typography
-            variant="h4"
-            textAlign="center"
-            fontWeight="bold"
-            mb={3}
-          >
-            Create Account
-          </Typography>
-
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        p: 2,
+      }}
+    >
+      <Paper sx={{ width: "min(100%, 440px)", p: 3 }}>
+        <Box component="form" onSubmit={submit}>
           <Stack spacing={2}>
-            <TextField
-              label="First Name"
-              fullWidth
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
+            <Typography variant="h5" fontWeight={700}>
+              Tạo tài khoản
+            </Typography>
+
+            {error && <Alert severity="error">{error}</Alert>}
 
             <TextField
-              label="Last Name"
-              fullWidth
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              label="Tên người dùng"
+              required
+              inputProps={{ minLength: 3, maxLength: 80 }}
+              value={form.username}
+              onChange={(event) =>
+                setForm({ ...form, username: event.target.value })
+              }
             />
 
             <TextField
               label="Email"
               type="email"
-              fullWidth
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <TextField
-              label="Phone Number"
-              fullWidth
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-
-            <TextField
-              label="Password"
-              fullWidth
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() =>
-                        setShowPassword(!showPassword)
-                      }
-                    >
-                      {showPassword ? (
-                        <VisibilityOff />
-                      ) : (
-                        <Visibility />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              label="Confirm Password"
-              fullWidth
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) =>
-                setConfirmPassword(e.target.value)
+              required
+              autoComplete="email"
+              value={form.email}
+              onChange={(event) =>
+                setForm({ ...form, email: event.target.value })
               }
             />
 
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleRegister}
-              disabled={loading}
-            >
-              {loading ? "Creating Account..." : "Register"}
+            <TextField
+              label="Mật khẩu"
+              type="password"
+              required
+              autoComplete="new-password"
+              value={form.password}
+              onChange={(event) =>
+                setForm({ ...form, password: event.target.value })
+              }
+            />
+
+            <TextField
+              label="Xác nhận mật khẩu"
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+            />
+
+            <Button type="submit" variant="contained" disabled={loading}>
+              {loading ? "Đang tạo..." : "Đăng ký"}
             </Button>
 
-            <Typography textAlign="center">
-              Already have an account?{" "}
-              <Link to="/">Login</Link>
+            <Typography variant="body2">
+              Đã có tài khoản? <Link to="/">Đăng nhập</Link>
             </Typography>
           </Stack>
-        </Paper>
-      </Box>
-
-      <Snackbar
-        open={success}
-        autoHideDuration={3000}
-        onClose={() => setSuccess(false)}
-      >
-        <Alert severity="success" sx={{ width: "100%" }}>
-          Registration Successful
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={3000}
-        onClose={() => setError("")}
-      >
-        <Alert severity="error" sx={{ width: "100%" }}>
-          {error}
-        </Alert>
-      </Snackbar>
-    </>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

@@ -14,15 +14,15 @@ export const generateReceipt = (transaction: Transaction) => {
   autoTable(doc, {
     startY: 45,
     body: [
-      ["Reference Number", transaction.referenceNumber],
+      ["Transaction ID", String(transaction.id)],
       ["Transaction Type", transaction.transactionType],
       ["Amount", `₹ ${transaction.amount}`],
-      ["Balance", `₹ ${transaction.balanceAfterTransaction}`],
       ["Date", transaction.transactionDate],
-      ["Remarks", transaction.remarks],
-      ["Status", transaction.message ?? "Success"],
+      ["Source Account", transaction.sourceAccountNumber ?? "-"],
+      ["Target Account", transaction.targetAccountNumber ?? "-"],
+      ["Status", transaction.status],
     ],
   });
 
-  doc.save(`Receipt-${transaction.referenceNumber}.pdf`);
+  doc.save(`Receipt-${transaction.id}.pdf`);
 };

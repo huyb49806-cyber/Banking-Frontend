@@ -1,26 +1,21 @@
 import {
+  Box,
   Drawer,
-  Toolbar,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Box,
+  Toolbar,
 } from "@mui/material";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
 import {
-  Dashboard,
   AccountBalanceWallet,
-  ReceiptLong,
-  People,
-  CreditScore,
-  Analytics,
-  
+  Dashboard,
   Logout,
+  ReceiptLong,
 } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
 import { removeToken } from "../../utils/token";
-import HistoryIcon from "@mui/icons-material/History";
+
 const drawerWidth = 260;
 
 const menuItems = [
@@ -39,32 +34,6 @@ const menuItems = [
     icon: <ReceiptLong />,
     path: "/transactions",
   },
-  {
-    text: "Beneficiaries",
-    icon: <People />,
-    path: "/beneficiaries",
-  },
-  {
-    text: "Loans",
-    icon: <CreditScore />,
-    path: "/loans",
-  },
-  {
-    text: "Analytics",
-    icon: <Analytics />,
-    path: "/analytics",
-  },
-  {
-  text: "Cards",
-  icon: <CreditCardIcon />,
-  path: "/cards",
-},{
-  text: "Activity Logs",
-  icon: <HistoryIcon />,
-  path: "/activity",
-},
-
-
 ];
 
 export default function Sidebar() {
@@ -91,7 +60,6 @@ export default function Sidebar() {
     >
       <Toolbar />
 
-      {/* Navigation */}
       <List sx={{ flexGrow: 1 }}>
         {menuItems.map((item) => (
           <ListItemButton
@@ -108,13 +76,11 @@ export default function Sidebar() {
             <ListItemIcon sx={{ color: "white" }}>
               {item.icon}
             </ListItemIcon>
-
             <ListItemText primary={item.text} />
           </ListItemButton>
         ))}
       </List>
 
-      {/* Logout */}
       <Box sx={{ mb: 2 }}>
         <List>
           <ListItemButton
@@ -129,7 +95,6 @@ export default function Sidebar() {
             <ListItemIcon sx={{ color: "#EF4444" }}>
               <Logout />
             </ListItemIcon>
-
             <ListItemText primary="Logout" />
           </ListItemButton>
         </List>

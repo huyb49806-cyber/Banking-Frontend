@@ -11,28 +11,15 @@ import {
 import toast from "react-hot-toast";
 import axios from "axios";
 import accountService from "../../services/account.service";
-import { getBeneficiaries } from "../../services/beneficiary.service";
 import { transferMoney } from "../../services/transaction.service";
-
-interface Account {
-  accountNumber: string;
-}
-
-interface Beneficiary {
-  id: number;
-  beneficiaryName?: string;
-  name?: string;
-  accountNumber: string;
-}
+import type { Account as BankAccount } from "../../types/account";
 
 export default function QuickTransfer() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
 
   const [fromAccountId, setFromAccountId] = useState("");
-  const [toAccountId, setToAccountId] = useState("");
+  const [targetAccountNumber, setTargetAccountNumber] = useState("");
   const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -41,19 +28,8 @@ export default function QuickTransfer() {
 
     async function loadData() {
       try {
-        const [accountsResponse, beneficiariesData] =
-          await Promise.all([
-            accountService.getAccounts(),
-            getBeneficiaries(),
-          ]);
-
-       console.log("Accounts Response:", accountsResponse.data);
-console.log("Beneficiaries Response:", beneficiariesData);
-
-if (!ignore) {
-  setAccounts(accountsResponse.data);
-  setBeneficiaries(beneficiariesData);
-}
+        const accountsData = await accountService.getAccounts();
+        if (!ignore) setAccounts(accountsData);
       } catch (error) {
         console.error(error);
         toast.error("Failed to load accounts");
@@ -73,8 +49,8 @@ if (!ignore) {
     return;
   }
 
-  if (!toAccountId) {
-    toast.error("Select Beneficiary");
+  if (!targetAccountNumber.trim()) {
+    toast.error("Enter the destination account number");
     return;
   }
 
@@ -83,32 +59,19 @@ if (!ignore) {
     return;
   }
 
-  if (!description.trim()) {
-    toast.error("Enter Remarks");
-    return;
-  }
-
   try {
     setLoading(true);
 
-    const transferData = {
-      fromAccount: fromAccountId,
-      toAccount: toAccountId,
+    await transferMoney({
+      sourceAccountNumber: fromAccountId,
+      targetAccountNumber: targetAccountNumber.trim(),
       amount: Number(amount),
-      remarks: description,
-    };
-
-    console.log("Transfer Request:", transferData);
-
-    const response = await transferMoney(transferData);
-
-    console.log("Transfer Response:", response);
+    });
 
     toast.success("Transfer Successful");
 
-    setToAccountId("");
+    setTargetAccountNumber("");
     setAmount("");
-    setDescription("");
 
   } catch (error: unknown) {
   console.error("Transfer Error:", error);
@@ -164,27 +127,11 @@ if (!ignore) {
         </TextField>
 
         <TextField
-          select
-          label="Beneficiary"
+          label="Destination Account Number"
           fullWidth
-          value={toAccountId}
-          onChange={(e) =>
-            setToAccountId(e.target.value)
-          }
-        >
-          {beneficiaries.map((beneficiary) => (
-            <MenuItem
-              key={beneficiary.id}
-              value={beneficiary.accountNumber}
-            >
-              {(beneficiary.beneficiaryName ??
-                beneficiary.name ??
-                "Beneficiary")}
-              {" - "}
-              {beneficiary.accountNumber}
-            </MenuItem>
-          ))}
-        </TextField>
+          value={targetAccountNumber}
+          onChange={(e) => setTargetAccountNumber(e.target.value)}
+        />
 
         <TextField
           label="Amount"
@@ -193,17 +140,6 @@ if (!ignore) {
           value={amount}
           onChange={(e) =>
             setAmount(e.target.value)
-          }
-        />
-
-        <TextField
-          label="Description"
-          multiline
-          rows={3}
-          fullWidth
-          value={description}
-          onChange={(e) =>
-            setDescription(e.target.value)
           }
         />
 

@@ -1,7 +1,11 @@
+export type AccountType = "SAVINGS" | "CHECKING";
+export type AccountStatus = "ACTIVE" | "BLOCKED";
+
 export interface Account {
   id: number;
   accountNumber: string;
-  accountType: string;
   balance: number;
-  status: string;
+  accountType: AccountType;
+  status: AccountStatus;
+  createdAt: string;
 }

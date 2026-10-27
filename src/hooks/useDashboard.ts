@@ -1,39 +1,53 @@
 import { useEffect, useState } from "react";
-import { getDashboard } from "../services/dashboard.service";
-import type { DashboardResponse } from "../types/dashboard";
+import accountService from "../services/account.service";
+import { getHistory } from "../services/history.service";
+
+interface DashboardSummary {
+  totalBalance: number;
+  totalAccounts: number;
+  totalTransactions: number;
+}
 
 export default function useDashboard() {
-  const [dashboard, setDashboard] =
-    useState<DashboardResponse | null>(null);
-
+  const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let ignore = false;
+    let active = true;
 
     async function loadDashboard() {
       try {
-        const data = await getDashboard();
+        const [accounts, history] = await Promise.all([
+          accountService.getAccounts(),
+          getHistory(0, 1),
+        ]);
 
-        if (!ignore) {
-          setDashboard(data);
+        if (!active) return;
+
+        setDashboard({
+          totalBalance: accounts.reduce(
+            (total, account) => total + account.balance,
+            0
+          ),
+          totalAccounts: accounts.length,
+          totalTransactions: history.totalElements,
+        });
+      } catch {
+        if (active) {
+          setError("Không tải được dữ liệu tổng quan.");
         }
       } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       }
     }
 
     void loadDashboard();
 
     return () => {
-      ignore = true;
+      active = false;
     };
   }, []);
 
-  return {
-    dashboard,
-    loading,
-  };
+  return { dashboard, loading, error };
 }

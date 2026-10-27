@@ -1,50 +1,53 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   Box,
-  Stack,
+  Button,
   Card,
   CardContent,
-  Typography,
   CircularProgress,
-  Button,
+  Stack,
+  Typography,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
-import { getDashboard } from "../../services/adminService";
-import type { AdminDashboard as AdminDashboardType } from "../../types/admin";
+import adminService from "../../services/adminService";
+
+interface DashboardSummary {
+  totalUsers: number;
+  totalAccounts: number;
+}
 
 export default function AdminDashboard() {
-  const [dashboard, setDashboard] = useState<AdminDashboardType | null>(null);
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  
+  const loadDashboard = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  const loadDashboard = async () => {
     try {
-      setLoading(true);
-      const data = await getDashboard();
-      setDashboard(data);
-    } catch (error) {
-      console.error("Failed to load dashboard:", error);
+      const [users, accounts] = await Promise.all([
+        adminService.getUsers(0, 1),
+        adminService.getAccounts(0, 1),
+      ]);
+
+      setSummary({
+        totalUsers: users.totalElements,
+        totalAccounts: accounts.totalElements,
+      });
+    } catch (loadError) {
+      console.error("Failed to load admin dashboard:", loadError);
+      setError("Unable to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-useEffect(() => {
-    loadDashboard();
   }, []);
-  if (loading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="70vh"
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
+
+  useEffect(() => {
+    void loadDashboard();
+  }, [loadDashboard]);
 
   return (
     <Box p={3}>
@@ -52,77 +55,52 @@ useEffect(() => {
         display="flex"
         justifyContent="space-between"
         alignItems="center"
+        gap={2}
         mb={3}
       >
         <Typography variant="h4" fontWeight="bold">
           Admin Dashboard
         </Typography>
-
         <Button
           variant="contained"
           startIcon={<RefreshIcon />}
-          onClick={loadDashboard}
+          onClick={() => void loadDashboard()}
+          disabled={loading}
         >
           Refresh
         </Button>
       </Box>
 
-      <Stack
-        direction={{ xs: "column", md: "row" }}
-        spacing={3}
-      >
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography color="text.secondary">
-              Total Customers
-            </Typography>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-            <Typography variant="h4" fontWeight="bold">
-              {dashboard?.totalCustomers ?? 0}
-            </Typography>
-          </CardContent>
-        </Card>
-
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography color="text.secondary">
-              Total Accounts
-            </Typography>
-
-            <Typography variant="h4" fontWeight="bold">
-              {dashboard?.totalAccounts ?? 0}
-            </Typography>
-          </CardContent>
-        </Card>
-
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography color="text.secondary">
-              Today's Transactions
-            </Typography>
-
-            <Typography variant="h4" fontWeight="bold">
-              {dashboard?.todayTransactions ?? 0}
-            </Typography>
-          </CardContent>
-        </Card>
-
-        <Card sx={{ flex: 1 }}>
-          <CardContent>
-            <Typography color="text.secondary">
-              Total Balance
-            </Typography>
-
-            <Typography
-              variant="h4"
-              fontWeight="bold"
-              color="success.main"
-            >
-              ₹{dashboard?.totalBalance?.toLocaleString("en-IN") ?? "0"}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Stack>
+      {loading && !summary ? (
+        <Box display="flex" justifyContent="center" py={8}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={3}>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography color="text.secondary">Total Users</Typography>
+              <Typography variant="h4" fontWeight="bold">
+                {summary?.totalUsers.toLocaleString() ?? "--"}
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1 }}>
+            <CardContent>
+              <Typography color="text.secondary">Total Accounts</Typography>
+              <Typography variant="h4" fontWeight="bold">
+                {summary?.totalAccounts.toLocaleString() ?? "--"}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Stack>
+      )}
     </Box>
   );
 }

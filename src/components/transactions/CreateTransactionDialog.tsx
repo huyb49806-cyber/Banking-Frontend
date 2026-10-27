@@ -9,6 +9,7 @@ import {
   MenuItem,
   Stack,
 } from "@mui/material";
+import type { TransactionType } from "../../types/transaction";
 
 import {
   deposit,
@@ -28,19 +29,17 @@ export default function CreateTransactionDialog({
   onSuccess,
 }: Props) {
   const [transactionType, setTransactionType] =
-    useState("DEPOSIT");
+    useState<TransactionType>("DEPOSIT");
 
   const [fromAccount, setFromAccount] = useState("");
   const [toAccount, setToAccount] = useState("");
   const [amount, setAmount] = useState("");
-  const [remarks, setRemarks] = useState("");
 
   const resetForm = () => {
     setTransactionType("DEPOSIT");
     setFromAccount("");
     setToAccount("");
     setAmount("");
-    setRemarks("");
   };
 
   const handleSubmit = async () => {
@@ -50,24 +49,21 @@ export default function CreateTransactionDialog({
           await deposit({
             accountNumber: toAccount,
             amount: Number(amount),
-            remarks,
           });
           break;
 
-        case "WITHDRAW":
+        case "WITHDRAWAL":
           await withdraw({
             accountNumber: fromAccount,
             amount: Number(amount),
-            remarks,
           });
           break;
 
         case "TRANSFER":
           await transferMoney({
-            fromAccount,
-            toAccount,
+            sourceAccountNumber: fromAccount,
+            targetAccountNumber: toAccount,
             amount: Number(amount),
-            remarks,
           });
           break;
 
@@ -102,14 +98,14 @@ export default function CreateTransactionDialog({
             label="Transaction Type"
             value={transactionType}
             onChange={(e) =>
-              setTransactionType(e.target.value)
+              setTransactionType(e.target.value as TransactionType)
             }
           >
             <MenuItem value="DEPOSIT">
               Deposit
             </MenuItem>
 
-            <MenuItem value="WITHDRAW">
+            <MenuItem value="WITHDRAWAL">
               Withdraw
             </MenuItem>
 
@@ -118,7 +114,7 @@ export default function CreateTransactionDialog({
             </MenuItem>
           </TextField>
 
-          {(transactionType === "WITHDRAW" ||
+          {(transactionType === "WITHDRAWAL" ||
             transactionType === "TRANSFER") && (
             <TextField
               label="From Account Number"
@@ -149,15 +145,6 @@ export default function CreateTransactionDialog({
             }
           />
 
-          <TextField
-            label="Remarks"
-            multiline
-            rows={3}
-            value={remarks}
-            onChange={(e) =>
-              setRemarks(e.target.value)
-            }
-          />
         </Stack>
       </DialogContent>
 

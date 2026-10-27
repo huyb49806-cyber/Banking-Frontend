@@ -17,8 +17,8 @@ export default function AccountSummary({ accounts }: Props) {
     (a) => a.accountType === "SAVINGS"
   ).length;
 
-  const currentAccounts = accounts.filter(
-    (a) => a.accountType === "CURRENT"
+  const checkingAccounts = accounts.filter(
+    (a) => a.accountType === "CHECKING"
   ).length;
 
   const totalBalance = accounts.reduce(
@@ -36,8 +36,8 @@ export default function AccountSummary({ accounts }: Props) {
       value: savingsAccounts,
     },
     {
-      title: "Current Accounts",
-      value: currentAccounts,
+      title: "Checking Accounts",
+      value: checkingAccounts,
     },
     {
       title: "Total Balance",

@@ -1,39 +1,34 @@
-import { useEffect, useState } from "react";
-import { getTransactionHistory } from "../services/transaction.service";
-import type { Transaction } from "../types/transaction";
+import { useCallback, useEffect, useState } from "react";
+import { getHistory } from "../services/history.service";
+import type { HistoryPage } from "../types/history";
 
-export default function useTransactions(accountNumber?: string) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+export default function useTransactions(page = 0, size = 20) {
+  const [history, setHistory] = useState<HistoryPage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchTransactions = async () => {
-    if (!accountNumber) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
     try {
-      setLoading(true);
-
-      const data = await getTransactionHistory(accountNumber);
-
-      setTransactions(data);
-    } catch (error) {
-      console.error("Failed to load transactions", error);
-      setTransactions([]);
+      setHistory(await getHistory(page, size));
+    } catch {
+      setError("Không tải được lịch sử giao dịch.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
   useEffect(() => {
-    void fetchTransactions();
-  }, [accountNumber]);
+    void refresh();
+  }, [refresh]);
 
   return {
-    transactions,
+    transactions: history?.content ?? [],
+    history,
     loading,
-    refresh: fetchTransactions,
+    error,
+    refresh,
   };
 }

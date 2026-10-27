@@ -1,4 +1,5 @@
+import type { AccountType } from "./account";
+
 export interface CreateAccountRequest {
-  accountType: string;
-  initialDeposit: number;
+  accountType: AccountType;
 }

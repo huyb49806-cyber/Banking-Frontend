@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import {
   Card,
   CardContent,
@@ -48,9 +49,11 @@ export default function Settings() {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
-        err?.response?.data?.message ||
+        (axios.isAxiosError<{ message?: string }>(err)
+          ? err.response?.data?.message
+          : undefined) ||
           "Unable to change password"
       );
     } finally {

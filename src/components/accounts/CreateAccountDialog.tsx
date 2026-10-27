@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import accountService from "../../services/account.service";
+import type { AccountType } from "../../types/account";
 
 interface Props {
   open: boolean;
@@ -24,8 +25,7 @@ export default function CreateAccountDialog({
   onClose,
   onSuccess,
 }: Props) {
-  const [accountType, setAccountType] = useState("SAVINGS");
-  const [balance, setBalance] = useState("");
+  const [accountType, setAccountType] = useState<AccountType>("SAVINGS");
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -33,21 +33,14 @@ export default function CreateAccountDialog({
 
   const clearForm = () => {
     setAccountType("SAVINGS");
-    setBalance("");
   };
 
   const handleSubmit = async () => {
-    if (!balance || Number(balance) < 0) {
-      setError(true);
-      return;
-    }
-
     try {
       setLoading(true);
 
       await accountService.createAccount({
         accountType,
-        initialDeposit: Number(balance),
       });
 
       setSuccess(true);
@@ -81,25 +74,19 @@ export default function CreateAccountDialog({
               select
               label="Account Type"
               value={accountType}
-              onChange={(e) => setAccountType(e.target.value)}
+              onChange={(e) =>
+                setAccountType(e.target.value as AccountType)
+              }
               fullWidth
             >
               <MenuItem value="SAVINGS">
                 Savings
               </MenuItem>
 
-              <MenuItem value="CURRENT">
-                Current
+            <MenuItem value="CHECKING">
+              Checking
               </MenuItem>
             </TextField>
-
-            <TextField
-              label="Initial Deposit"
-              type="number"
-              value={balance}
-              onChange={(e) => setBalance(e.target.value)}
-              fullWidth
-            />
           </Stack>
         </DialogContent>
 

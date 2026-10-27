@@ -17,15 +17,10 @@ export default function Transactions() {
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch =
-      transaction.remarks
-        ?.toLowerCase()
-        .includes(search.toLowerCase()) ||
-      transaction.transactionType
-        .toLowerCase()
-        .includes(search.toLowerCase()) ||
-      transaction.referenceNumber
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      transaction.transactionType.toLowerCase().includes(search.toLowerCase()) ||
+      transaction.id.toString().includes(search) ||
+      transaction.sourceAccountNumber?.includes(search) ||
+      transaction.targetAccountNumber?.includes(search);
 
     const matchesType =
       type === "" ||

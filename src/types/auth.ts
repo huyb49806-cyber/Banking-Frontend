@@ -4,18 +4,24 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  message: string;
+  tokenType: "Bearer";
+  accessToken: string;
+  expiresInSeconds: number;
+  userId: number;
+  username: string;
+  email: string;
+  role: "USER" | "ADMIN";
 }
 
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
+  username: string;
   email: string;
-  phone: string;
   password: string;
 }
 
 export interface RegisterResponse {
+  id: number;
+  username: string;
+  email: string;
   message: string;
 }

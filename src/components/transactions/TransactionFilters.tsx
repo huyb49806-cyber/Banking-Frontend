@@ -35,7 +35,7 @@ export default function TransactionFilters({
       >
         <TextField
           label="Search"
-          placeholder="Search by remarks, type or reference..."
+          placeholder="Search by account number or transaction type..."
           value={search}
           onChange={(e) =>
             setSearch(e.target.value)
@@ -61,7 +61,7 @@ export default function TransactionFilters({
             Deposit
           </MenuItem>
 
-          <MenuItem value="WITHDRAW">
+          <MenuItem value="WITHDRAWAL">
             Withdraw
           </MenuItem>
 
@@ -69,13 +69,6 @@ export default function TransactionFilters({
             Transfer
           </MenuItem>
 
-          <MenuItem value="TRANSFER_DEBIT">
-            Transfer Debit
-          </MenuItem>
-
-          <MenuItem value="TRANSFER_CREDIT">
-            Transfer Credit
-          </MenuItem>
         </TextField>
       </Box>
 

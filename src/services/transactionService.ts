@@ -1,22 +1,9 @@
-import axios from "axios";
+import api from "./api";
 import type { Transaction } from "../types/transaction";
 
-const API = "http://localhost:8080/api/transactions";
-
 export const getTransactionByReference = async (
-  referenceNumber: string
+  transactionId: number
 ): Promise<Transaction> => {
-
-  const token = localStorage.getItem("jwtToken");
-
-  const response = await axios.get(
-    `${API}/${referenceNumber}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-
+  const response = await api.get<Transaction>(`/history/${transactionId}`);
   return response.data;
 };

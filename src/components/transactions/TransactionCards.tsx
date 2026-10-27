@@ -15,14 +15,12 @@ export default function TransactionCards({
   ).length;
 
   const withdrawals = transactions.filter(
-    (t) => t.transactionType === "WITHDRAW"
+    (t) => t.transactionType === "WITHDRAWAL"
   ).length;
 
   const transfers = transactions.filter(
     (t) =>
-      t.transactionType === "TRANSFER" ||
-      t.transactionType === "TRANSFER_DEBIT" ||
-      t.transactionType === "TRANSFER_CREDIT"
+      t.transactionType === "TRANSFER"
   ).length;
 
   const cards = [

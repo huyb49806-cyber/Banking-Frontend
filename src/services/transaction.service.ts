@@ -1,49 +1,36 @@
 import api from "./api";
 import type {
+  AccountTransactionRequest,
   Transaction,
-  DepositRequest,
-  WithdrawRequest,
   TransferRequest,
 } from "../types/transaction";
 
-/**
- * Deposit Money
- */
-export const deposit = async (
-  data: DepositRequest
-): Promise<Transaction> => {
-  const response = await api.post("/transactions/deposit", data);
-  return response.data;
-};
-
-/**
- * Withdraw Money
- */
-export const withdraw = async (
-  data: WithdrawRequest
-): Promise<Transaction> => {
-  const response = await api.post("/transactions/withdraw", data);
-  return response.data;
-};
-
-/**
- * Transfer Money
- */
-export const transferMoney = async (
-  data: TransferRequest
-): Promise<Transaction> => {
-  const response = await api.post("/transactions/transfer", data);
-  return response.data;
-};
-
-/**
- * Transaction History
- */
-export const getTransactionHistory = async (
-  accountNumber: string
-): Promise<Transaction[]> => {
-  const response = await api.get(
-    `/transactions/history/${accountNumber}`
+export async function deposit(
+  request: AccountTransactionRequest
+): Promise<Transaction> {
+  const response = await api.post<Transaction>(
+    "/transactions/deposit",
+    request
   );
   return response.data;
-};
+}
+
+export async function withdraw(
+  request: AccountTransactionRequest
+): Promise<Transaction> {
+  const response = await api.post<Transaction>(
+    "/transactions/withdraw",
+    request
+  );
+  return response.data;
+}
+
+export async function transferMoney(
+  request: TransferRequest
+): Promise<Transaction> {
+  const response = await api.post<Transaction>(
+    "/transactions/transfer",
+    request
+  );
+  return response.data;
+}

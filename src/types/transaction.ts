@@ -1,36 +1,23 @@
+export type TransactionType = "DEPOSIT" | "WITHDRAWAL" | "TRANSFER";
+export type TransactionStatus = "SUCCESS";
+
 export interface Transaction {
-  referenceNumber: string;
-  transactionType: string;
-
-  fromAccount?: string;
-  toAccount?: string;
-
+  id: number;
+  transactionType: TransactionType;
   amount: number;
-
-  balanceAfterTransaction: number;
-
   transactionDate: string;
-
-  remarks: string;
-
-  message?: string;
+  status: TransactionStatus;
+  sourceAccountNumber: string | null;
+  targetAccountNumber: string | null;
 }
 
-export interface DepositRequest {
+export interface AccountTransactionRequest {
   accountNumber: string;
   amount: number;
-  remarks: string;
-}
-
-export interface WithdrawRequest {
-  accountNumber: string;
-  amount: number;
-  remarks: string;
 }
 
 export interface TransferRequest {
-  fromAccount: string;
-  toAccount: string;
+  sourceAccountNumber: string;
+  targetAccountNumber: string;
   amount: number;
-  remarks: string;
 }

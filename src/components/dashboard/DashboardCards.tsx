@@ -1,133 +1,73 @@
 import {
-  Grid,
-  Paper,
-  Typography,
+  AccountBalanceWallet,
+  ReceiptLong,
+  Savings,
+} from "@mui/icons-material";
+import {
+  Alert,
   Box,
+  Card,
+  CardContent,
   CircularProgress,
+  Stack,
+  Typography,
 } from "@mui/material";
-
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
-import CreditScoreIcon from "@mui/icons-material/CreditScore";
-import SavingsIcon from "@mui/icons-material/Savings";
-
 import useDashboard from "../../hooks/useDashboard";
 
 export default function DashboardCards() {
-  const { dashboard, loading } = useDashboard();
+  const { dashboard, loading, error } = useDashboard();
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height={250}
-      >
+      <Box display="flex" justifyContent="center" py={5}>
         <CircularProgress />
       </Box>
     );
   }
 
-  if (!dashboard) {
+  if (error || !dashboard) {
     return (
-      <Typography
-        color="error"
-        textAlign="center"
-        mt={5}
-      >
-        Unable to load dashboard.
-      </Typography>
+      <Alert severity="error">
+        {error ?? "Không tải được dữ liệu tổng quan."}
+      </Alert>
     );
   }
 
   const cards = [
     {
-      title: "Total Balance",
+      label: "Total Balance",
       value: `₹ ${dashboard.totalBalance.toLocaleString("en-IN")}`,
-      icon: <SavingsIcon />,
-      color: "#2563EB",
+      icon: <Savings color="success" />,
     },
     {
-      title: "Accounts",
-      value: dashboard.totalAccounts,
-      icon: <AccountBalanceWalletIcon />,
-      color: "#059669",
+      label: "Accounts",
+      value: dashboard.totalAccounts.toLocaleString(),
+      icon: <AccountBalanceWallet color="primary" />,
     },
     {
-      title: "Transactions",
-      value: dashboard.totalTransactions,
-      icon: <ReceiptLongIcon />,
-      color: "#EA580C",
-    },
-    {
-      title: "Active Loans",
-      value: dashboard.activeLoans,
-      icon: <CreditScoreIcon />,
-      color: "#7C3AED",
+      label: "Transactions",
+      value: dashboard.totalTransactions.toLocaleString(),
+      icon: <ReceiptLong color="warning" />,
     },
   ];
 
   return (
-    <Grid container spacing={3}>
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
       {cards.map((card) => (
-        <Grid
-          key={card.title}
-          size={{ xs: 12, sm: 6, lg: 3 }}
-        >
-          <Paper
-            elevation={4}
-            sx={{
-              p: 3,
-              borderRadius: 4,
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              "&:hover": {
-                transform: "translateY(-6px)",
-                boxShadow: 8,
-              },
-            }}
-          >
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
+        <Card key={card.label} sx={{ flex: 1 }}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" gap={2}>
               <Box>
-                <Typography
-                  color="text.secondary"
-                  variant="body2"
-                >
-                  {card.title}
-                </Typography>
-
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  mt={1}
-                >
+                <Typography color="text.secondary">{card.label}</Typography>
+                <Typography variant="h5" fontWeight={700} mt={1}>
                   {card.value}
                 </Typography>
               </Box>
-
-              <Box
-                sx={{
-                  width: 65,
-                  height: 65,
-                  bgcolor: card.color,
-                  borderRadius: "50%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "#fff",
-                }}
-              >
-                {card.icon}
-              </Box>
+              {card.icon}
             </Box>
-          </Paper>
-        </Grid>
+          </CardContent>
+        </Card>
       ))}
-    </Grid>
+    </Stack>
   );
 }

@@ -1,43 +1,70 @@
+import { useEffect, useState } from "react";
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  Grid,
   Chip,
-  Button,
   Divider,
+  Grid,
+  Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DownloadIcon from "@mui/icons-material/Download";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-
 import type { Transaction } from "../types/transaction";
-import { getTransactionByReference } from "../services/transactionService";
+import { getTransaction } from "../services/history.service";
 import { generateReceipt } from "../utils/generateReceipt";
 
 export default function TransactionDetails() {
   const navigate = useNavigate();
   const { id } = useParams();
-
-  const [transaction, setTransaction] =
-    useState<Transaction | null>(null);
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!id) return;
+    const transactionId = Number(id);
+    if (!Number.isInteger(transactionId) || transactionId < 1) {
+      setError(true);
+      return;
+    }
 
-    getTransactionByReference(id)
-      .then(setTransaction)
-      .catch(console.error);
+    let active = true;
+    getTransaction(transactionId)
+      .then((data) => {
+        if (active) setTransaction(data);
+      })
+      .catch(() => {
+        if (active) setError(true);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  const rows = [
+    ["Transaction ID", transaction ? String(transaction.id) : "-"],
+    ["Transaction Type", transaction?.transactionType ?? "-"],
+    [
+      "Amount",
+      transaction ? `₹ ${transaction.amount.toLocaleString("en-IN")}` : "-",
+    ],
+    [
+      "Transaction Date",
+      transaction
+        ? dayjs(transaction.transactionDate).format("DD MMM YYYY, hh:mm A")
+        : "-",
+    ],
+    ["Source Account", transaction?.sourceAccountNumber ?? "-"],
+    ["Target Account", transaction?.targetAccountNumber ?? "-"],
+  ];
 
   return (
     <Box>
-
-      {/* Back Button */}
-
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate("/transactions")}
@@ -45,208 +72,49 @@ export default function TransactionDetails() {
       >
         Back to Transactions
       </Button>
-
-      <Card elevation={4}>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>Transaction could not be loaded.</Alert>}
+      <Card>
         <CardContent>
-
-          {/* Header */}
-
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             flexWrap="wrap"
+            gap={2}
             mb={3}
           >
-            <Box>
-              <Typography
-                variant="h4"
-                fontWeight={700}
-              >
-                Transaction Details
-              </Typography>
-
-              <Typography color="text.secondary">
-                View complete transaction information
-              </Typography>
-            </Box>
-
-            <Chip
-              label={transaction?.message ?? "SUCCESS"}
-              color="success"
-              sx={{
-                fontWeight: 700,
-                px: 2,
-                mt: { xs: 2, md: 0 },
-              }}
-            />
+            <Typography variant="h5" fontWeight={700}>
+              Transaction Details
+            </Typography>
+            {transaction && <Chip label={transaction.status} color="success" />}
           </Box>
-
           <Divider sx={{ mb: 3 }} />
-
-          {/* Information Cards */}
-
-          <Grid container spacing={3}>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Reference Number
-                  </Typography>
-
-                  <Typography
-                    variant="h6"
-                    fontWeight={600}
-                  >
-                    {transaction?.referenceNumber ?? "-"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Transaction Type
-                  </Typography>
-
-                  <Typography
-                    variant="h6"
-                    fontWeight={600}
-                  >
-                    {transaction?.transactionType ?? "-"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Amount
-                  </Typography>
-
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    color="success.main"
-                  >
-                    ₹
-                    {transaction?.amount?.toLocaleString() ??
-                      "0"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Balance After Transaction
-                  </Typography>
-
-                  <Typography
-                    variant="h5"
-                    fontWeight={600}
-                  >
-                    ₹
-                    {transaction?.balanceAfterTransaction?.toLocaleString() ??
-                      "0"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Transaction Date
-                  </Typography>
-
-                  <Typography variant="h6">
-                    {transaction
-                      ? dayjs(
-                          transaction.transactionDate
-                        ).format(
-                          "DD MMM YYYY • hh:mm A"
-                        )
-                      : "-"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Status
-                  </Typography>
-
-                  <Typography
-                    variant="h6"
-                    color="success.main"
-                    fontWeight={700}
-                  >
-                    {transaction?.message ?? "Success"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography color="text.secondary">
-                    Remarks
-                  </Typography>
-
-                  <Typography mt={1}>
-                    {transaction?.remarks ||
-                      "No remarks available"}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
+          <Grid container spacing={2}>
+            {rows.map(([label, value]) => (
+              <Grid key={label} size={{ xs: 12, md: 6 }}>
+                <Typography color="text.secondary">{label}</Typography>
+                <Typography variant="h6" fontWeight={600}>
+                  {value}
+                </Typography>
+              </Grid>
+            ))}
           </Grid>
-
-          {/* Action Buttons */}
-
-          <Box
-            mt={4}
-            display="flex"
-            gap={2}
-            flexWrap="wrap"
-          >
-            <Button
-              variant="contained"
-              startIcon={<DownloadIcon />}
-              onClick={() => {
-                if (transaction) {
-                  generateReceipt(transaction);
-                }
-              }}
-            >
-              Download Receipt
-            </Button>
-
-            <Button
-              variant="outlined"
-              onClick={() => window.print()}
-            >
-              Print Receipt
-            </Button>
-          </Box>
-
+          {transaction && (
+            <Box mt={4} display="flex" gap={2} flexWrap="wrap">
+              <Button
+                variant="contained"
+                startIcon={<DownloadIcon />}
+                onClick={() => generateReceipt(transaction)}
+              >
+                Download Receipt
+              </Button>
+              <Button variant="outlined" onClick={() => window.print()}>
+                Print Receipt
+              </Button>
+            </Box>
+          )}
         </CardContent>
       </Card>
-
     </Box>
   );
 }
